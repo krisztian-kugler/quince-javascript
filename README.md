@@ -1,1 +1,1 @@
-"# quince-javascript" 
+Quince JavaScript homework project
