@@ -91,8 +91,21 @@ main .wrapper .list-header .cell:last-child {
 }
 
 main .wrapper .list-header .name-job {
+	display: flex;
+	justify-content: space-between;
 	flex-basis: 420px;
 	padding-left: 15px;
+	padding-right: 15px;
+	cursor: pointer;
+}
+
+main .wrapper .list-header .name-job:hover {
+	background-color: #e3f1ff;
+}
+
+main .wrapper .list-header .name-job .arrow {
+	font-size: 16px;
+	font-weight: bold;
 }
 
 main .wrapper .list-header .age {
@@ -133,13 +146,13 @@ main .wrapper .data-dump {
 
 main .wrapper textarea {
 	width: 100%;
-	height: 100px;
+	height: 108px;
 	padding: 5px;
 	background-color: white;
 	color: #3c3c3c;
 	border: 1px solid rgb(200, 200, 200);
 	font-family: monospace;
-	font-size: 16px;
+	font-size: 12px;
 	outline: none;
 	resize: none;
   transition: all 1000ms;
@@ -333,4 +346,10 @@ main .wrapper textarea.updated {
 
 .modal .wrapper .button-bar .btn.ok {
 	margin-right: 30px;
+}
+
+.modal .wrapper .button-bar .btn.ok.disabled {
+	background-color: rgb(233, 233, 233);
+	color: rgb(180, 180, 180);
+	cursor: default;
 }

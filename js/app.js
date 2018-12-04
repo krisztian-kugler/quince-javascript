@@ -8,7 +8,9 @@ const DOMAccess = {
   jobInput: document.querySelector("#jobInput"),
   ageInput: document.querySelector("#ageInput"),
   nicknameInput: document.querySelector("#nicknameInput"),
-  modalCheck: document.querySelector(".modal .check")
+  modalCheck: document.querySelector(".modal .check"),
+  modalOk: document.querySelector(".modal .btn.ok"),
+  arrow: document.querySelector(".arrow")
 }
 
 const personItem = `
@@ -29,6 +31,7 @@ const personItem = `
 
 let persons = [];
 let timeout = null;
+let order = null;
 
 // Person class
 class Person {
@@ -62,11 +65,33 @@ const createNewPersonItem = (person, index) => {
 
 // Modal toggle handler
 const toggleModal = () => {
-  DOMAccess.modal.style.display === "none" ? DOMAccess.modal.style.display = "flex" : DOMAccess.modal.style.display = "none";
+  if (DOMAccess.modal.style.display === "none") {
+    DOMAccess.modal.style.display = "flex";
+  } else {
+    DOMAccess.modal.style.display = "none";
+    DOMAccess.modalCheck.style.display = "none";
+    DOMAccess.modalOk.classList.add("disabled");
+    for (let modalInput of DOMAccess.modalInputs) {
+      modalInput.value = "";
+    }
+  } 
+}
+
+// Checking name input
+const onNameInput = (event) => {
+  if (event.target.value.length >= 3) {
+    DOMAccess.modalOk.classList.remove("disabled");
+  } else {
+    DOMAccess.modalOk.classList.add("disabled");
+  }
 }
 
 // Create new person and close/reset modal
 const submitPerson = () => {
+  if (DOMAccess.modalOk.classList.contains("disabled")) {
+    return;
+  }
+
   const employee = isEmployee(DOMAccess.modalCheck);
   const newPerson = new Person(
     DOMAccess.nameInput.value,
@@ -78,11 +103,7 @@ const submitPerson = () => {
   persons.push(newPerson);
   createNewPersonItem(newPerson, persons.length - 1);
   toggleModal();
-  updateDataDump(newPerson);
-  DOMAccess.modalCheck.style.display = "none";
-  for (let modalInput of DOMAccess.modalInputs) {
-    modalInput.value = "";
-  }
+  updateDataDump();
 }
 
 // Determine if checkbox is checked in modal
@@ -96,9 +117,9 @@ const isEmployee = (element) => {
 
 // Delete person from list
 const deletePerson = (i) => {
-  const deleted = Object.assign({}, persons.splice(i, 1)[0]);
+  persons.splice(i, 1);
   document.querySelector(`#person-${i}`).remove();
-  updateDataDump(deleted);
+  updateDataDump();
   regeneratePersonIndexes();
 }
 
@@ -118,13 +139,19 @@ const toggleCheckbox = (i) => {
     const check = document.querySelector(`#person-${i} .check`);
     check.style.display === "none" ? check.style.display = "block" : check.style.display = "none";
     persons[i].employee = !persons[i].employee;
-    updateDataDump(persons[i]);
+    updateDataDump();
   }
 }
 
 // Write new/deleted/updated data into textarea
-const updateDataDump = (person) => {
-  DOMAccess.textArea.value = `{name: ${person.name}, job: ${person.job}, age: ${person.age}, nick: ${person.nick}, employee: ${person.employee}}`;
+const updateDataDump = () => {
+  let data = "";
+
+  persons.forEach((person, i) => {
+    data += `{\n  "name": "${person.name}",\n  "job": "${person.job}",\n  "age": "${person.age}",\n  "nick": "${person.nick}",\n  "employee": ${person.employee}\n}${i === persons.length - 1 ? "" : ","}\n`
+  })
+
+  DOMAccess.textArea.value = data;
   updated();
 }
 
@@ -140,14 +167,83 @@ const updated = () => {
   }, 100);
 }
 
+// Sort persons by name
+const sortByName = () => {
+  order === "ascending" ? order = "descending" : order = "ascending";
+
+  if (!order) {
+    order = "ascending";
+  }
+
+  if (order === "ascending") {
+    bubbleSort(persons, "name");
+    DOMAccess.arrow.innerHTML = "&uarr;";
+  } else {
+    bubbleSort(persons, "name").reverse();
+    DOMAccess.arrow.innerHTML = "&darr;";
+  } 
+
+  DOMAccess.personsList.innerHTML = "";
+  generatePersonsList(persons);
+  updateDataDump();
+}
+
+// Alphabetical bubble sort (not quite suitable for large arrays)
+const bubbleSort = (arr, property) => {
+  if (arr.length < 2) {
+    throw new Error("Array is too short for sorting!");
+  }
+
+  let counter = arr.length - 2;
+
+  while (counter >= 0) {
+    for (let i = 0; i <= counter; i++) {
+      if (isSwapNecessary(arr[i][property], arr[i + 1][property])) {
+        [arr[i], arr[i + 1]] = [arr[i + 1], arr[i]];
+      }
+    }
+    counter--;
+  }
+  
+  return arr;
+}
+
+// Helper function for bubble sort to determine whether a swap is necessary (checks alphabetical order)
+const isSwapNecessary = (a, b) => {
+  const str1 = a.toLowerCase();
+  const str2 = b.toLowerCase();
+  const length = Math.min(str1.length, str2.length);
+
+  for (let i = 0; i < length; i++) {
+    if (str1[i] < str2[i]) {
+      return false;
+    } else if (str1[i] === str2[i]) {
+      if (i === length - 1 && str1.length > str2.length) {
+        return true;
+      }
+      continue;
+    } else {
+      return true;
+    }
+  }
+}
+
 // Fetch persons from JSON
 fetch("./assets/persons.json")
   .then(res => res.json())
   .then(data => {
-    persons = data;
-    generatePersonsList(persons);
+    data.forEach(item => {
+      const person = new Person(
+        item.name,
+        item.job,
+        item.age,
+        item.nick,
+        item.employee
+      )
+      persons.push(person);
+    })
+    sortByName();
   })
   .catch(() => {
-    persons = backupPersons;
-    generatePersonsList(persons);
+    throw new Error("Persons not found!");
   })

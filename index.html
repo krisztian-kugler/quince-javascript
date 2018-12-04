@@ -20,7 +20,10 @@
       <button class="btn-add" onclick="toggleModal()">Add</button>
 
       <div class="list-header">
-        <div class="cell name-job">Name / Job</div>
+        <div class="cell name-job" onclick="sortByName()">
+          Name / Job
+          <div class="arrow">&uarr;</div>
+        </div>
         <div class="cell age">Age</div>
         <div class="cell nickname">Nickname</div>
         <div class="cell employee">Employee</div>
@@ -37,19 +40,19 @@
       <div class="wrapper">
         <div class="input name">
           <label>Name</label>
-          <input type="text" name="" id="nameInput" />
+          <input type="text" name="name" id="nameInput" placeholder="Name (At least 3 characters)" oninput="onNameInput(event)" />
         </div>
         <div class="input job-title">
           <label>Job title</label>
-          <input type="text" name="" id="jobInput" />
+          <input type="text" name="job" id="jobInput" placeholder="Job" />
         </div>
         <div class="input age">
           <label>Age</label>
-          <input type="text" name="" id="ageInput" />
+          <input type="text" name="age" id="ageInput" placeholder="Age" />
         </div>
         <div class="input nickname">
           <label>Nickname</label>
-          <input type="text" name="" id="nicknameInput" />
+          <input type="text" name="nickname" id="nicknameInput" placeholder="Nickname" />
         </div>
         <div class="input employee">
           <label>Employee</label>
@@ -59,7 +62,7 @@
         </div>
         <div class="divider"></div>
         <div class="button-bar">
-          <button class="btn ok" onclick="submitPerson()">OK</button>
+          <button class="btn ok disabled" onclick="submitPerson()">OK</button>
           <button class="btn cancel" onclick="toggleModal()">Cancel</button>
         </div>
       </div>
