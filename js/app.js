@@ -31,7 +31,7 @@ const personItem = `
 
 let persons = [];
 let timeout = null;
-let order = null;
+let order = "ascending";
 
 // Person class
 class Person {
@@ -103,6 +103,7 @@ const submitPerson = () => {
   persons.push(newPerson);
   createNewPersonItem(newPerson, persons.length - 1);
   toggleModal();
+  sortByName();
   updateDataDump();
 }
 
@@ -168,21 +169,22 @@ const updated = () => {
 }
 
 // Sort persons by name
-const sortByName = () => {
-  order === "ascending" ? order = "descending" : order = "ascending";
-
-  if (!order) {
-    order = "ascending";
+const sortByName = (event) => {
+  if (event && event.target.parentElement.classList.contains("list-header")) {
+    order === "ascending" ? order = "descending" : order = "ascending";
   }
-
-  if (order === "ascending") {
-    bubbleSort(persons, "name");
-    DOMAccess.arrow.innerHTML = "&uarr;";
-  } else {
-    bubbleSort(persons, "name").reverse();
-    DOMAccess.arrow.innerHTML = "&darr;";
-  } 
-
+  
+  switch (order) {
+    case "ascending": 
+      bubbleSort(persons, "name");
+      DOMAccess.arrow.innerHTML = "&uarr;";
+      break;
+    case "descending":
+      bubbleSort(persons, "name").reverse();
+      DOMAccess.arrow.innerHTML = "&darr;";
+      break;
+  }
+  
   DOMAccess.personsList.innerHTML = "";
   generatePersonsList(persons);
   updateDataDump();
