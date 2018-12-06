@@ -32,6 +32,7 @@ const personItem = `
 let persons = [];
 let timeout = null;
 let order = "ascending";
+let initialized = false;
 
 // Person class
 class Person {
@@ -91,7 +92,6 @@ const submitPerson = () => {
   if (DOMAccess.modalOk.classList.contains("disabled")) {
     return;
   }
-
   const employee = isEmployee(DOMAccess.modalCheck);
   const newPerson = new Person(
     DOMAccess.nameInput.value,
@@ -147,11 +147,9 @@ const toggleCheckbox = (i) => {
 // Write new/deleted/updated data into textarea
 const updateDataDump = () => {
   let data = "";
-
   persons.forEach((person, i) => {
     data += `{\n  "name": "${person.name}",\n  "job": "${person.job}",\n  "age": "${person.age}",\n  "nick": "${person.nick}",\n  "employee": ${person.employee}\n}${i === persons.length - 1 ? "" : ","}\n`
   })
-
   DOMAccess.textArea.value = data;
   updated();
 }
@@ -173,7 +171,6 @@ const sortByName = (event) => {
   if (event && event.target.parentElement.classList.contains("list-header")) {
     order === "ascending" ? order = "descending" : order = "ascending";
   }
-  
   switch (order) {
     case "ascending": 
       bubbleSort(persons, "name");
@@ -184,10 +181,11 @@ const sortByName = (event) => {
       DOMAccess.arrow.innerHTML = "&darr;";
       break;
   }
-  
   DOMAccess.personsList.innerHTML = "";
   generatePersonsList(persons);
-  updateDataDump();
+  if (initialized) {
+    updateDataDump();
+  }
 }
 
 // Alphabetical bubble sort (not quite suitable for large arrays)
@@ -195,9 +193,7 @@ const bubbleSort = (arr, property) => {
   if (arr.length < 2) {
     throw new Error("Array is too short for sorting!");
   }
-
   let counter = arr.length - 2;
-
   while (counter >= 0) {
     for (let i = 0; i <= counter; i++) {
       if (isSwapNecessary(arr[i][property], arr[i + 1][property])) {
@@ -206,7 +202,6 @@ const bubbleSort = (arr, property) => {
     }
     counter--;
   }
-  
   return arr;
 }
 
@@ -215,7 +210,6 @@ const isSwapNecessary = (a, b) => {
   const str1 = a.toLowerCase();
   const str2 = b.toLowerCase();
   const length = Math.min(str1.length, str2.length);
-
   for (let i = 0; i < length; i++) {
     if (str1[i] < str2[i]) {
       return false;
@@ -245,6 +239,7 @@ fetch("./assets/persons.json")
       persons.push(person);
     })
     sortByName();
+    initialized = true;
   })
   .catch(() => {
     throw new Error("Persons not found!");
